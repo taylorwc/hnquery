@@ -1,0 +1,32 @@
+service: hnquery 
+app: hnquery
+tenant: taylorwc
+
+provider:
+  name: aws
+  runtime: python3.7
+  timeout: 15
+  profile: tcl
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - "ec2:CreateNetworkInterface"
+        - "ec2:DescribeNetworkInterface"
+        - "ec2:DeleteNetworkInterface"
+      Resource: '*'
+
+plugins:
+  - serverless-python-requirements
+custom:
+  pythonRequirements:
+    dockerizePip: true
+
+functions:
+  showHN:
+    handler: handler.showhn
+    events:
+      - schedule: 
+          rate: rate(12 hours)
+    environment:
+      SLACK_URL: ${ssm:slackWebhookUrl}
+
