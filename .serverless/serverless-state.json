@@ -1,0 +1,278 @@
+{
+  "service": {
+    "service": "hnquery",
+    "serviceObject": {
+      "name": "hnquery"
+    },
+    "provider": {
+      "stage": "dev",
+      "region": "us-east-1",
+      "variableSyntax": "\\${([ ~:a-zA-Z0-9._@'\",\\-\\/\\(\\)]+?)}",
+      "name": "aws",
+      "runtime": "python3.7",
+      "timeout": 15,
+      "profile": "tcl",
+      "iamRoleStatements": [
+        {
+          "Effect": "Allow",
+          "Action": [
+            "ec2:CreateNetworkInterface",
+            "ec2:DescribeNetworkInterface",
+            "ec2:DeleteNetworkInterface"
+          ],
+          "Resource": "*"
+        }
+      ],
+      "versionFunctions": true,
+      "remoteFunctionData": null,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket"
+          },
+          "ShowHNLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/hnquery-dev-showHN"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "dev",
+                        "hnquery",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/hnquery-dev-showHN:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/hnquery-dev-showHN:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iamRoleStatements\"][0]"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "hnquery",
+                    "dev",
+                    "us-east-1",
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "ShowHNLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/hnquery/dev/1555945426425-2019-04-22T15:03:46.425Z/hnquery.zip"
+              },
+              "FunctionName": "hnquery-dev-showHN",
+              "Handler": "handler.showhn",
+              "MemorySize": 1024,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Runtime": "python3.7",
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "SLACK_URL": "https://hooks.slack.com/services/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"
+                }
+              }
+            },
+            "DependsOn": [
+              "ShowHNLogGroup",
+              "IamRoleLambdaExecution"
+            ]
+          },
+          "ShowHNLambdaVersione6Vy6O1jFoIV7tegLi5nfwPletRf0dZt6fseW8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ShowHNLambdaFunction"
+              },
+              "CodeSha256": "Dob+2hYj2OXod2eeIV6DhZmTixdNZ14epQDL5DXhIOw="
+            }
+          },
+          "ShowHNEventsRuleSchedule1": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+              "ScheduleExpression": "rate(12 hours)",
+              "State": "ENABLED",
+              "Targets": [
+                {
+                  "Arn": {
+                    "Fn::GetAtt": [
+                      "ShowHNLambdaFunction",
+                      "Arn"
+                    ]
+                  },
+                  "Id": "showHNSchedule"
+                }
+              ]
+            }
+          },
+          "ShowHNLambdaPermissionEventsRuleSchedule1": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ShowHNLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "events.",
+                    {
+                      "Ref": "AWS::URLSuffix"
+                    }
+                  ]
+                ]
+              },
+              "SourceArn": {
+                "Fn::GetAtt": [
+                  "ShowHNEventsRuleSchedule1",
+                  "Arn"
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          },
+          "ShowHNLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ShowHNLambdaVersione6Vy6O1jFoIV7tegLi5nfwPletRf0dZt6fseW8"
+            }
+          }
+        }
+      },
+      "coreCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket"
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "custom": {
+      "pythonRequirements": {
+        "dockerizePip": true
+      }
+    },
+    "plugins": [
+      "serverless-python-requirements"
+    ],
+    "pluginsData": {},
+    "functions": {
+      "showHN": {
+        "handler": "handler.showhn",
+        "events": [
+          {
+            "schedule": {
+              "rate": "rate(12 hours)"
+            }
+          }
+        ],
+        "environment": {
+          "SLACK_URL": "https://hooks.slack.com/services/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"
+        },
+        "name": "hnquery-dev-showHN",
+        "package": {},
+        "memory": 1024,
+        "timeout": 15,
+        "runtime": "python3.7",
+        "vpc": {}
+      }
+    },
+    "app": "hnquery",
+    "tenant": "taylorwc",
+    "layers": {},
+    "artifact": "/Users/taylorclauson/backup/serverless/hnquery2/.serverless/hnquery.zip"
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/hnquery/dev/1555945426425-2019-04-22T15:03:46.425Z",
+    "artifact": "hnquery.zip"
+  }
+}
