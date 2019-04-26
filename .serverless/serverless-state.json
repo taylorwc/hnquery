@@ -7,7 +7,7 @@
     "provider": {
       "stage": "dev",
       "region": "us-east-1",
-      "variableSyntax": "\\${([ ~:a-zA-Z0-9._@'\",\\-\\/\\(\\)]+?)}",
+      "variableSyntax": "\\${([ ~:a-zA-Z0-9._@'\",\\-\\/\\(\\)*]+?)}",
       "name": "aws",
       "runtime": "python3.7",
       "timeout": 15,
@@ -30,7 +30,18 @@
         "Description": "The AWS CloudFormation template for this Serverless application",
         "Resources": {
           "ServerlessDeploymentBucket": {
-            "Type": "AWS::S3::Bucket"
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
           },
           "ShowHNLogGroup": {
             "Type": "AWS::Logs::LogGroup",
@@ -122,7 +133,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/hnquery/dev/1555945426425-2019-04-22T15:03:46.425Z/hnquery.zip"
+                "S3Key": "serverless/hnquery/dev/1556237773741-2019-04-26T00:16:13.741Z/hnquery.zip"
               },
               "FunctionName": "hnquery-dev-showHN",
               "Handler": "handler.showhn",
@@ -146,14 +157,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "ShowHNLambdaVersione6Vy6O1jFoIV7tegLi5nfwPletRf0dZt6fseW8": {
+          "ShowHNLambdaVersionR3DIANZPiaONWoX7f15tqphhux41oNiIhvmGgShn0bU": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ShowHNLambdaFunction"
               },
-              "CodeSha256": "Dob+2hYj2OXod2eeIV6DhZmTixdNZ14epQDL5DXhIOw="
+              "CodeSha256": "QS4w1hn3SqJZW8B6NW/y/SL9XwNbnrI8j9Pe2jnvHDw="
             }
           },
           "ShowHNEventsRuleSchedule1": {
@@ -213,7 +224,7 @@
           "ShowHNLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ShowHNLambdaVersione6Vy6O1jFoIV7tegLi5nfwPletRf0dZt6fseW8"
+              "Ref": "ShowHNLambdaVersionR3DIANZPiaONWoX7f15tqphhux41oNiIhvmGgShn0bU"
             }
           }
         }
@@ -223,7 +234,18 @@
         "Description": "The AWS CloudFormation template for this Serverless application",
         "Resources": {
           "ServerlessDeploymentBucket": {
-            "Type": "AWS::S3::Bucket"
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
           }
         },
         "Outputs": {
@@ -272,7 +294,7 @@
     "artifact": "/Users/taylorclauson/backup/serverless/hnquery2/.serverless/hnquery.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/hnquery/dev/1555945426425-2019-04-22T15:03:46.425Z",
+    "artifactDirectoryName": "serverless/hnquery/dev/1556237773741-2019-04-26T00:16:13.741Z",
     "artifact": "hnquery.zip"
   }
 }
