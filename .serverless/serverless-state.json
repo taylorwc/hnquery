@@ -133,7 +133,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/hnquery/dev/1556237773741-2019-04-26T00:16:13.741Z/hnquery.zip"
+                "S3Key": "serverless/hnquery/dev/1556303908680-2019-04-26T18:38:28.680Z/hnquery.zip"
               },
               "FunctionName": "hnquery-dev-showHN",
               "Handler": "handler.showhn",
@@ -157,14 +157,14 @@
               "IamRoleLambdaExecution"
             ]
           },
-          "ShowHNLambdaVersionR3DIANZPiaONWoX7f15tqphhux41oNiIhvmGgShn0bU": {
+          "ShowHNLambdaVersion59AkuTwzFcJS0s18PJrhM2ij5xAYQjqy8iNkEL0Bxbo": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ShowHNLambdaFunction"
               },
-              "CodeSha256": "QS4w1hn3SqJZW8B6NW/y/SL9XwNbnrI8j9Pe2jnvHDw="
+              "CodeSha256": "C/hn4tOcKbJyzLTqGjHM/4rssGWYqISdnO0qCPikECA="
             }
           },
           "ShowHNEventsRuleSchedule1": {
@@ -224,7 +224,7 @@
           "ShowHNLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ShowHNLambdaVersionR3DIANZPiaONWoX7f15tqphhux41oNiIhvmGgShn0bU"
+              "Ref": "ShowHNLambdaVersion59AkuTwzFcJS0s18PJrhM2ij5xAYQjqy8iNkEL0Bxbo"
             }
           }
         }
@@ -294,7 +294,7 @@
     "artifact": "/Users/taylorclauson/backup/serverless/hnquery2/.serverless/hnquery.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/hnquery/dev/1556237773741-2019-04-26T00:16:13.741Z",
+    "artifactDirectoryName": "serverless/hnquery/dev/1556303908680-2019-04-26T18:38:28.680Z",
     "artifact": "hnquery.zip"
   }
 }
