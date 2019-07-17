@@ -8,6 +8,7 @@ import abc
 import datetime
 import hashlib
 import ipaddress
+import warnings
 from enum import Enum
 
 from asn1crypto.keys import PublicKeyInfo
@@ -188,8 +189,21 @@ class AuthorityKeyIdentifier(object):
 
     @classmethod
     def from_issuer_subject_key_identifier(cls, ski):
+        if isinstance(ski, SubjectKeyIdentifier):
+            digest = ski.digest
+        else:
+            digest = ski.value.digest
+            warnings.warn(
+                "Extension objects are deprecated as arguments to "
+                "from_issuer_subject_key_identifier and support will be "
+                "removed soon. Please migrate to passing a "
+                "SubjectKeyIdentifier directly.",
+                utils.DeprecatedIn27,
+                stacklevel=2,
+            )
+
         return cls(
-            key_identifier=ski.value.digest,
+            key_identifier=digest,
             authority_cert_issuer=None,
             authority_cert_serial_number=None
         )
@@ -856,10 +870,40 @@ class ExtendedKeyUsage(object):
 class OCSPNoCheck(object):
     oid = ExtensionOID.OCSP_NO_CHECK
 
+    def __eq__(self, other):
+        if not isinstance(other, OCSPNoCheck):
+            return NotImplemented
+
+        return True
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(OCSPNoCheck)
+
+    def __repr__(self):
+        return "<OCSPNoCheck()>"
+
 
 @utils.register_interface(ExtensionType)
 class PrecertPoison(object):
     oid = ExtensionOID.PRECERT_POISON
+
+    def __eq__(self, other):
+        if not isinstance(other, PrecertPoison):
+            return NotImplemented
+
+        return True
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __hash__(self):
+        return hash(PrecertPoison)
+
+    def __repr__(self):
+        return "<PrecertPoison()>"
 
 
 @utils.register_interface(ExtensionType)

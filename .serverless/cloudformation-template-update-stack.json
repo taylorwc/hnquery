@@ -63,7 +63,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/hnquery-dev-showHN:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/hnquery-dev*:*"
                     }
                   ]
                 },
@@ -74,7 +74,7 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/hnquery-dev-showHN:*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/hnquery-dev*:*:*"
                     }
                   ]
                 },
@@ -98,11 +98,59 @@
             [
               "hnquery",
               "dev",
-              "us-east-1",
+              {
+                "Ref": "AWS::Region"
+              },
               "lambdaRole"
             ]
           ]
         }
+      }
+    },
+    "EnterpriseLogAccessIamRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::802587217904:root"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "sts:ExternalId": "ServerlessEnterprise-NJfQcXTCPYLSwzrXXM"
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "LogFilterAccess",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:FilterLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "ShowHNLogGroup",
+                        "Arn"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       }
     },
     "ShowHNLambdaFunction": {
@@ -112,7 +160,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/hnquery/dev/1556303908680-2019-04-26T18:38:28.680Z/hnquery.zip"
+          "S3Key": "serverless/hnquery/dev/1562601438184-2019-07-08T15:57:18.184Z/hnquery.zip"
         },
         "FunctionName": "hnquery-dev-showHN",
         "Handler": "handler.showhn",
@@ -127,7 +175,7 @@
         "Timeout": 15,
         "Environment": {
           "Variables": {
-            "SLACK_URL": "https://hooks.slack.com/services/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"
+            "SLACK_URL": "https://hooks.slack.com/services/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"
           }
         }
       },
@@ -136,14 +184,14 @@
         "IamRoleLambdaExecution"
       ]
     },
-    "ShowHNLambdaVersion59AkuTwzFcJS0s18PJrhM2ij5xAYQjqy8iNkEL0Bxbo": {
+    "ShowHNLambdaVersionubIWHi5husqciG89C2Y9X0ohyPOO2JjFmW6Zd1N8": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ShowHNLambdaFunction"
         },
-        "CodeSha256": "C/hn4tOcKbJyzLTqGjHM/4rssGWYqISdnO0qCPikECA="
+        "CodeSha256": "7qcCRvQnB2voXsjCLigAg2GHjpOIqWxRn9YDHkHa0Fg="
       }
     },
     "ShowHNEventsRuleSchedule1": {
@@ -174,22 +222,22 @@
           ]
         },
         "Action": "lambda:InvokeFunction",
-        "Principal": {
-          "Fn::Join": [
-            "",
-            [
-              "events.",
-              {
-                "Ref": "AWS::URLSuffix"
-              }
-            ]
-          ]
-        },
+        "Principal": "events.amazonaws.com",
         "SourceArn": {
           "Fn::GetAtt": [
             "ShowHNEventsRuleSchedule1",
             "Arn"
           ]
+        }
+      }
+    },
+    "CloudWatchLogsSubscriptionFilterShowHNLogGroup": {
+      "Type": "AWS::Logs::SubscriptionFilter",
+      "Properties": {
+        "DestinationArn": "arn:aws:logs:us-east-1:802587217904:destination:NJfQcXTCPYLSwzrXXM#CMygzD1fQpDnj3v1dg#hnquery#dev",
+        "FilterPattern": "?\"REPORT RequestId: \" ?\"SERVERLESS_ENTERPRISE\"",
+        "LogGroupName": {
+          "Ref": "ShowHNLogGroup"
         }
       }
     }
@@ -200,10 +248,18 @@
         "Ref": "ServerlessDeploymentBucket"
       }
     },
+    "EnterpriseLogAccessIamRole": {
+      "Value": {
+        "Fn::GetAtt": [
+          "EnterpriseLogAccessIamRole",
+          "Arn"
+        ]
+      }
+    },
     "ShowHNLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ShowHNLambdaVersion59AkuTwzFcJS0s18PJrhM2ij5xAYQjqy8iNkEL0Bxbo"
+        "Ref": "ShowHNLambdaVersionubIWHi5husqciG89C2Y9X0ohyPOO2JjFmW6Zd1N8"
       }
     }
   }

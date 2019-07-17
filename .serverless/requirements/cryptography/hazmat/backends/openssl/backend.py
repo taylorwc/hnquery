@@ -55,6 +55,9 @@ from cryptography.hazmat.backends.openssl.hmac import _HMACContext
 from cryptography.hazmat.backends.openssl.ocsp import (
     _OCSPRequest, _OCSPResponse
 )
+from cryptography.hazmat.backends.openssl.poly1305 import (
+    _POLY1305_KEY_SIZE, _Poly1305Context
+)
 from cryptography.hazmat.backends.openssl.rsa import (
     _RSAPrivateKey, _RSAPublicKey
 )
@@ -331,7 +334,10 @@ class Backend(object):
             bin_len = self._lib.BN_bn2bin(bn, bin_ptr)
             # A zero length means the BN has value 0
             self.openssl_assert(bin_len >= 0)
-            return int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
+            val = int.from_bytes(self._ffi.buffer(bin_ptr)[:bin_len], "big")
+            if self._lib.BN_is_negative(bn):
+                val = -val
+            return val
         else:
             # Under Python 2 the best we can do is hex()
             hex_cdata = self._lib.BN_bn2hex(bn)
@@ -1882,8 +1888,14 @@ class Backend(object):
                 ssh._ssh_write_mpint(parameter_numbers.g) +
                 ssh._ssh_write_mpint(public_numbers.y)
             )
-        else:
-            assert isinstance(key, ec.EllipticCurvePublicKey)
+        elif isinstance(key, ed25519.Ed25519PublicKey):
+            raw_bytes = key.public_bytes(serialization.Encoding.Raw,
+                                         serialization.PublicFormat.Raw)
+            return b"ssh-ed25519 " + base64.b64encode(
+                ssh._ssh_write_string(b"ssh-ed25519") +
+                ssh._ssh_write_string(raw_bytes)
+            )
+        elif isinstance(key, ec.EllipticCurvePublicKey):
             public_numbers = key.public_numbers()
             try:
                 curve_name = {
@@ -1905,6 +1917,10 @@ class Backend(object):
                 ssh._ssh_write_string(b"ecdsa-sha2-" + curve_name) +
                 ssh._ssh_write_string(curve_name) +
                 ssh._ssh_write_string(point)
+            )
+        else:
+            raise ValueError(
+                "OpenSSH encoding is not supported for this key type"
             )
 
     def _parameter_bytes(self, encoding, format, cdata):
@@ -2400,6 +2416,16 @@ class Backend(object):
                 additional_certificates.append(_Certificate(self, x509))
 
         return (key, cert, additional_certificates)
+
+    def poly1305_supported(self):
+        return self._lib.Cryptography_HAS_POLY1305 == 1
+
+    def create_poly1305_ctx(self, key):
+        utils._check_byteslike("key", key)
+        if len(key) != _POLY1305_KEY_SIZE:
+            raise ValueError("A poly1305 key is 32 bytes long")
+
+        return _Poly1305Context(self, key)
 
 
 class GetCipherByName(object):
